@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поиск записей</title>
+    
+    <!-- Подключаем Bootstrap для стилей -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Подключаем Chosen.js и его стили -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.min.css">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>Поиск записей</h1>
+        <!-- Форма для поиска -->
+        <form id="searchForm">
+            <!-- Поле для Имени -->
+            <div class="mb-3">
+                <label for="firstName" class="form-label">Имя</label>
+                <input type="text" class="form-control" id="firstName" placeholder="Введите имя">
+            </div>
+
+            <!-- Поле для Фамилии -->
+            <div class="mb-3">
+                <label for="lastName" class="form-label">Фамилия</label>
+                <input type="text" class="form-control" id="lastName" placeholder="Введите фамилию">
+            </div>
+
+            <!-- Выпадающий список для Города -->
+            <div class="mb-3">
+                <label for="city" class="form-label">Город</label>
+                <select id="city" class="form-select chosen-select" multiple>
+                    <!-- Города будут загружаться через API -->
+                </select>
+            </div>
+
+            <!-- Выпадающий список для Профессии -->
+            <div class="mb-3">
+                <label for="profession" class="form-label">Профессия</label>
+                <select id="profession" class="form-select chosen-select" multiple>
+                    <!-- Профессии будут загружаться через API -->
+                </select>
+            </div>
+
+            <!-- Поле для поиска по Аннотации -->
+            <div class="mb-3">
+                <label for="annotation" class="form-label">Аннотация</label>
+                <input type="text" class="form-control" id="annotation" placeholder="Поиск по аннотации">
+            </div>
+
+            <!-- Кнопка поиска -->
+            <button type="submit" class="btn btn-primary">Найти</button>
+        </form>
+
+        <!-- Результаты поиска -->
+        <div id="results" class="mt-4"></div>
+    </div>
+
+    <!-- Подключаем jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Подключаем Chosen.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Инициализируем Chosen для всех выпадающих списков
+            $(".chosen-select").chosen({width: "100%"});
+
+            // Ваш API-ключ и ID таблицы
+            const apiKey = 'AIzaSyDV5uwrdcKNByiE8omh1QINWvKSzrmAszQ';  // Вставить API-ключ
+            const spreadsheetId = '17BUQfI8KYDASB1zLi4LpTd7u5yH2RfSI21uCM9a6z10';
+            const range = 'A2:E1000'; // Диапазон данных
+
+            // Функция для получения данных из Google Sheets
+            function getSheetData() {
+                return fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=${apiKey}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        return data.values || [];
+                    });
+            }
+
+            // Загружаем данные при старте страницы
+            getSheetData().then(records => {
+                // Создаем уникальные списки городов и профессий для фильтрации
+                const cities = [...new Set(records.map(record => record[2]))]; // Город
+                const professions = [...new Set(records.map(record => record[3]))]; // Профессия
+
+                // Заполняем выпадающие списки
+                cities.forEach(city => {
+                    $('#city').append(`<option value="${city}">${city}</option>`);
+                });
+                professions.forEach(profession => {
+                    $('#profession').append(`<option value="${profession}">${profession}</option>`);
+                });
+
+                // Обновляем Chosen после добавления данных
+                $("#city, #profession").trigger("chosen:updated");
+
+                // Логика поиска по данным
+                $('#searchForm').on('submit', function(event) {
+                    event.preventDefault();
+
+                    // Получаем значения полей формы
+                    const firstName = $('#firstName').val().toLowerCase();
+                    const lastName = $('#lastName').val().toLowerCase();
+                    const selectedCities = $('#city').val() || [];
+                    const selectedProfessions = $('#profession').val() || [];
+                    const annotation = $('#annotation').val().toLowerCase();
+
+                    // Фильтруем записи на основе введенных значений
+                    const filteredRecords = records.filter(record => {
+                        const matchesFirstName = record[0].toLowerCase().includes(firstName); // Имя
+                        const matchesLastName = record[1].toLowerCase().includes(lastName);  // Фамилия
+                        const matchesCity = selectedCities.length === 0 || selectedCities.includes(record[2]); // Город
+                        const matchesProfession = selectedProfessions.length === 0 || selectedProfessions.includes(record[3]); // Профессия
+                        const matchesAnnotation = record[4].toLowerCase().includes(annotation); // Аннотация
+
+                        return matchesFirstName && matchesLastName && matchesCity && matchesProfession && matchesAnnotation;
+                    });
+
+                    // Отображаем результаты поиска
+                    const resultsDiv = $('#results');
+                    resultsDiv.empty(); // Очищаем предыдущие результаты
+
+                    if (filteredRecords.length === 0) {
+                        resultsDiv.append('<p>Записей не найдено.</p>');
+                    } else {
+                        filteredRecords.forEach(record => {
+                            resultsDiv.append(`<p>${record[0]} ${record[1]}, ${record[2]}, ${record[3]}: ${record[4]}</p>`);
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
