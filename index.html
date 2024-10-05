@@ -10,6 +10,7 @@
 
     <!-- Подключаем Chosen.js и его стили -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.min.css">
+	<link rel="stylesheet" href="styles.css"> <!-- Подключаем свои стили -->
 </head>
 <body>
     <div class="container mt-4">
@@ -81,7 +82,7 @@
                         return data.values || [];
                     });
             }
-
+			
             // Загружаем данные при старте страницы
             getSheetData().then(records => {
                 // Создаем уникальные списки городов и профессий для фильтрации
@@ -124,17 +125,44 @@
                     // Отображаем результаты поиска
                     const resultsDiv = $('#results');
                     resultsDiv.empty(); // Очищаем предыдущие результаты
+					
+					resultsDiv.append(`<hr/>`);
+					resultsDiv.append(`<p>Результаты</p>`);
 
                     if (filteredRecords.length === 0) {
                         resultsDiv.append('<p>Записей не найдено.</p>');
                     } else {
                         filteredRecords.forEach(record => {
-                            resultsDiv.append(`<p>${record[0]} ${record[1]}, ${record[2]}, ${record[3]}: ${record[4]}</p>`);
+						 createCard(record);
+					//    resultsDiv.append(`<p>${record[0]} ${record[1]}, ${record[2]}, ${record[3]}: ${record[4]}</p>`);
                         });
                     }
                 });
             });
         });
+		
+	function createCard(record) {
+		const card = document.createElement('div');
+		card.className = 'card';
+		card.innerHTML = `
+			<div class="card-row">
+				<h2>${record[0]} ${record[1]}</h2>
+			</div>
+			<div class="card-row">
+				<h3>Город:</h3>
+				<p>${record[2]}</p>
+			</div>
+			<div class="card-row">
+				<h3>Профессия:</h3>
+				<p>${record[3]}</p>
+			</div>
+			<div class="card-row">
+				<h3>Аннотация:</h3>
+				<p>${record[4]}</p>
+			</div>
+		`;
+		document.getElementById('results').appendChild(card);
+	}		
     </script>
 </body>
 </html>
