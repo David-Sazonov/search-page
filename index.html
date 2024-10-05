@@ -69,10 +69,10 @@
             // Инициализируем Chosen для всех выпадающих списков
             $(".chosen-select").chosen({width: "100%"});
 
-            // Ваш API-ключ и ID таблицы
+            // API-ключ и ID таблицы
             const apiKey = 'AIzaSyDV5uwrdcKNByiE8omh1QINWvKSzrmAszQ';  // Вставить API-ключ
-            const spreadsheetId = '17BUQfI8KYDASB1zLi4LpTd7u5yH2RfSI21uCM9a6z10';
-            const range = 'A2:E1000'; // Диапазон данных
+            const spreadsheetId = '17BUQfI8KYDASB1zLi4LpTd7u5yH2RfSI21uCM9a6z10'; // Вставить Id на гугл-таблицы (вырезать из ссылки) 
+            const range = 'A2:E2000'; // Диапазон данных, с запасом
 
             // Функция для получения данных из Google Sheets
             function getSheetData() {
@@ -105,17 +105,17 @@
                     event.preventDefault();
 
                     // Получаем значения полей формы
-                    const firstName = $('#firstName').val().toLowerCase();
-                    const lastName = $('#lastName').val().toLowerCase();
-                    const selectedCities = $('#city').val() || [];
+                    const firstName           = $('#firstName').val().toLowerCase();
+                    const lastName            = $('#lastName').val().toLowerCase();
+                    const selectedCities      = $('#city').val() || [];
                     const selectedProfessions = $('#profession').val() || [];
-                    const annotation = $('#annotation').val().toLowerCase();
+                    const annotation          = $('#annotation').val().toLowerCase();
 
                     // Фильтруем записи на основе введенных значений
                     const filteredRecords = records.filter(record => {
-                        const matchesFirstName = record[0].toLowerCase().includes(firstName); // Имя
-                        const matchesLastName = record[1].toLowerCase().includes(lastName);  // Фамилия
-                        const matchesCity = selectedCities.length === 0 || selectedCities.includes(record[2]); // Город
+                        const matchesFirstName  = record[0].toLowerCase().includes(firstName); // Имя
+                        const matchesLastName   = record[1].toLowerCase().includes(lastName);  // Фамилия
+                        const matchesCity       = selectedCities.length === 0 || selectedCities.includes(record[2]); // Город
                         const matchesProfession = selectedProfessions.length === 0 || selectedProfessions.includes(record[3]); // Профессия
                         const matchesAnnotation = record[4].toLowerCase().includes(annotation); // Аннотация
 
@@ -125,22 +125,25 @@
                     // Отображаем результаты поиска
                     const resultsDiv = $('#results');
                     resultsDiv.empty(); // Очищаем предыдущие результаты
-					
-					resultsDiv.append(`<hr/>`);
-					resultsDiv.append(`<p>Результаты</p>`);
+
+		    // Разделитлеьная линия
+		    resultsDiv.append(`<hr/>`);
+			
+		    resultsDiv.append(`<h5>Результаты</h5>`);
 
                     if (filteredRecords.length === 0) {
                         resultsDiv.append('<p>Записей не найдено.</p>');
                     } else {
                         filteredRecords.forEach(record => {
-						 createCard(record);
-					//    resultsDiv.append(`<p>${record[0]} ${record[1]}, ${record[2]}, ${record[3]}: ${record[4]}</p>`);
+				createCard(record);
+			//    resultsDiv.append(`<p>${record[0]} ${record[1]}, ${record[2]}, ${record[3]}: ${record[4]}</p>`);
                         });
                     }
                 });
             });
         });
-		
+
+	// Карточка результатов
 	function createCard(record) {
 		const card = document.createElement('div');
 		card.className = 'card';
