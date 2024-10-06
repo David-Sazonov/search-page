@@ -54,12 +54,17 @@ h1 {
     margin: 0;
     flex: 0 0 150px; /* Ширина метки */
 /*   color: #007bff; */
-	font-size: initial;
+    font-size: initial;
 }
-
 
 .card-row p {
     margin: 0;
     flex: 1; /* Значение будет занимать оставшееся пространство */
     color: #555;
+}
+
+input::placeholder {   /* Согласование шрифта и цвета плейсхолдеров bootstrap и chosen.js */
+     color: #999 !important;
+     font-size: 0.8rem !important;
+     opacity: 1;
 }
