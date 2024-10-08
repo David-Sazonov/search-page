@@ -10,14 +10,17 @@
 
     <!-- Подключаем Chosen.js и его стили -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.min.css">
-	<link rel="stylesheet" href="styles.css"> <!-- Подключаем свои стили -->
+    
+    <!-- Подключаем свои стили -->	
+    <link rel="stylesheet" href="styles.css">
 </head>
+	
 <body>
     <div class="container mt-4">
         <h1>Поиск записей</h1>
         <!-- Форма для поиска -->
         <form id="searchForm">
-            <!-- Поле для Имени -->
+             <!-- Поле для Имени -->
             <div class="mb-3">
                 <label for="firstName" class="form-label">Имя</label>
                 <input type="text" class="form-control" id="firstName" placeholder="Поиск по имени">
@@ -50,9 +53,12 @@
                 <label for="annotation" class="form-label">Аннотация</label>
                 <input type="text" class="form-control" id="annotation" placeholder="Поиск по аннотации">
             </div>
-
-            <!-- Кнопка поиска -->
-            <button type="submit" class="btn btn-primary">Найти</button>
+			
+	    <!-- Кнопки для поиска и очистки -->
+	    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+	        <button type="submit" class="btn btn-primary me-md-2" type="button">Найти</button>
+	        <button class="btn btn-outline-primary" id="resetButton" type="button">Очистить</button>
+	    </div>
         </form>
 
         <!-- Результаты поиска -->
@@ -65,14 +71,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js"></script>
 
     <script>
+	// variable overrides
         $(document).ready(function() {
             // Инициализируем Chosen для всех выпадающих списков
             $(".chosen-select").chosen({width: "100%"});
 
-            // API-ключ и ID таблицы
+            // Ваш API-ключ и ID таблицы
             const apiKey = 'AIzaSyDV5uwrdcKNByiE8omh1QINWvKSzrmAszQ';  // Вставить API-ключ
-            const spreadsheetId = '17BUQfI8KYDASB1zLi4LpTd7u5yH2RfSI21uCM9a6z10'; // Вставить Id на гугл-таблицы (вырезать из ссылки) 
-            const range = 'A2:E2000'; // Диапазон данных, с запасом
+            const spreadsheetId = '17BUQfI8KYDASB1zLi4LpTd7u5yH2RfSI21uCM9a6z10';
+            const range = 'A2:E1000'; // Диапазон данных
 
             // Функция для получения данных из Google Sheets
             function getSheetData() {
@@ -105,66 +112,88 @@
                     event.preventDefault();
 
                     // Получаем значения полей формы
-                    const firstName           = $('#firstName').val().toLowerCase();
-                    const lastName            = $('#lastName').val().toLowerCase();
-                    const selectedCities      = $('#city').val() || [];
+                    const firstName = $('#firstName').val().toLowerCase();
+                    const lastName = $('#lastName').val().toLowerCase();
+                    const selectedCities = $('#city').val() || [];
                     const selectedProfessions = $('#profession').val() || [];
-                    const annotation          = $('#annotation').val().toLowerCase();
+                    const annotation = $('#annotation').val().toLowerCase();
 
                     // Фильтруем записи на основе введенных значений
-                    const filteredRecords = records.filter(record => {
-                        const matchesFirstName  = record[0].toLowerCase().includes(firstName); // Имя
-                        const matchesLastName   = record[1].toLowerCase().includes(lastName);  // Фамилия
-                        const matchesCity       = selectedCities.length === 0 || selectedCities.includes(record[2]); // Город
-                        const matchesProfession = selectedProfessions.length === 0 || selectedProfessions.includes(record[3]); // Профессия
-                        const matchesAnnotation = record[4].toLowerCase().includes(annotation); // Аннотация
+		    const filteredRecords = records.filter(record => {
+			// Проверяем, если поле заполнено - фильтруем по нему, иначе не учитываем
+			const matchesFirstName = firstName === '' || record[0].toLowerCase().includes(firstName); // Имя
+			const matchesLastName = lastName === '' || record[1].toLowerCase().includes(lastName);  // Фамилия
+			const matchesCity = selectedCities.length === 0 || selectedCities.includes(record[2]); // Город
+			const matchesProfession = selectedProfessions.length === 0 || selectedProfessions.includes(record[3]); // Профессия
+			const matchesAnnotation = annotation === '' || record[4].toLowerCase().includes(annotation); // Аннотация
 
-                        return matchesFirstName && matchesLastName && matchesCity && matchesProfession && matchesAnnotation;
-                    });
+			// Запись соответствует, если удовлетворяет хотя бы одному заполненному полю
+			return matchesFirstName && matchesLastName && matchesCity && matchesProfession && matchesAnnotation;
+		    });
 
                     // Отображаем результаты поиска
                     const resultsDiv = $('#results');
                     resultsDiv.empty(); // Очищаем предыдущие результаты
-
-		    // Разделитлеьная линия
+					
 		    resultsDiv.append(`<hr/>`);
-			
 		    resultsDiv.append(`<h5>Результаты</h5>`);
 
-                    if (filteredRecords.length === 0) {
-                        resultsDiv.append('<p>Записей не найдено.</p>');
+			if (filteredRecords.length === 0) {
+                        resultsDiv.append('<p>Записей не найдено</p>');
                     } else {
                         filteredRecords.forEach(record => {
 				createCard(record);
-			//    resultsDiv.append(`<p>${record[0]} ${record[1]}, ${record[2]}, ${record[3]}: ${record[4]}</p>`);
+			//      resultsDiv.append(`<p>${record[0]} ${record[1]}, ${record[2]}, ${record[3]}: ${record[4]}</p>`);
                         });
                     }
                 });
+				
+		// Обработка кнопки "Очистить"
+		$('#resetButton').on('click', function() {
+			// Сбрасываем текстовые поля
+			$('#firstName').val('');
+			$('#lastName').val('');
+			$('#annotation').val('');
+
+			// Сбрасываем выбранные значения в выпадающих списках
+			$('#city').val([]).trigger("chosen:updated");
+			$('#profession').val([]).trigger("chosen:updated");
+
+			// Очищаем результаты поиска
+			$('#results').empty();
+		});
             });
         });
-
-	// Карточка результатов
+		
 	function createCard(record) {
 		const card = document.createElement('div');
 		card.className = 'card';
-		card.innerHTML = `
-			<div class="card-row">
-				<h2>${record[0]} ${record[1]}</h2>
-			</div>
-			<div class="card-row">
-				<h3>Город:</h3>
-				<p>${record[2]}</p>
-			</div>
-			<div class="card-row">
-				<h3>Профессия:</h3>
-				<p>${record[3]}</p>
-			</div>
-			<div class="card-row">
-				<h3>Аннотация:</h3>
-				<p>${record[4]}</p>
-			</div>
-		`;
-		document.getElementById('results').appendChild(card);
+		
+		// Проверяем каждое поле на наличие данных
+		const firstName  = record[0] ? record[0] : '';
+		const lastName   = record[1] ? record[1] : '';
+		const city       = record[2] ? record[2] : 'не указано';
+		const profession = record[3] ? record[3] : 'не указано';
+		const annotation = record[4] ? record[4] : 'не указано';
+		
+	 card.innerHTML = `
+		<div class="card-row">
+			<h2>${firstName} ${lastName}</h2>
+		</div>
+		<div class="card-row">
+			<h3>Город:</h3>
+			<p>${city}</p>
+		</div>
+		<div class="card-row">
+			<h3>Профессия:</h3>
+			<p>${profession}</p>
+		</div>
+		<div class="card-row">
+			<h3>Аннотация:</h3>
+			<p>${annotation}</p>
+		</div>
+	`;
+	document.getElementById('results').appendChild(card);
 	}		
     </script>
 </body>
