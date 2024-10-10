@@ -120,12 +120,13 @@
 
                     // Фильтруем записи на основе введенных значений
 		    const filteredRecords = records.filter(record => {
+			    
 			// Проверяем, если поле заполнено - фильтруем по нему, иначе не учитываем
-			const matchesFirstName = firstName === '' || record[0].toLowerCase().includes(firstName); // Имя
-			const matchesLastName = lastName === '' || record[1].toLowerCase().includes(lastName);  // Фамилия
-			const matchesCity = selectedCities.length === 0 || selectedCities.includes(record[2]); // Город
-			const matchesProfession = selectedProfessions.length === 0 || selectedProfessions.includes(record[3]); // Профессия
-			const matchesAnnotation = annotation === '' || record[4].toLowerCase().includes(annotation); // Аннотация
+			const matchesFirstName = firstName === '' || (record[0] && record[0].toLowerCase().includes(firstName)); // Имя
+			const matchesLastName = lastName === '' || (record[1] && record[1].toLowerCase().includes(lastName));   // Фамилия
+			const matchesCity = selectedCities.length === 0 || (record[2] && selectedCities.includes(record[2]));   // Город
+			const matchesProfession = selectedProfessions.length === 0 || (record[3] && selectedProfessions.includes(record[3])); // Профессия
+			const matchesAnnotation = annotation === '' || (record[4] && record[4].toLowerCase().includes(annotation)); // Аннотация
 
 			// Запись соответствует, если удовлетворяет хотя бы одному заполненному полю
 			return matchesFirstName && matchesLastName && matchesCity && matchesProfession && matchesAnnotation;
